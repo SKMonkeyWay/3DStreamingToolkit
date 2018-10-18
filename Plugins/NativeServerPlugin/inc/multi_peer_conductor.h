@@ -84,8 +84,7 @@ public:
 	void HandleSignalConnect();
 
 protected:
-	MultiPeerConductor(shared_ptr<FullServerConfig> config,
-		scoped_refptr<PeerConnectionFactoryInterface> peer_factory = webrtc::CreatePeerConnectionFactory());
+	MultiPeerConductor(shared_ptr<FullServerConfig> config);
 	~MultiPeerConductor();
 
 	struct MessageEntry
