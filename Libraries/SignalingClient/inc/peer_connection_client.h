@@ -190,6 +190,7 @@ protected:
 	std::string notification_data_;
 	std::string client_name_;
 	std::string authorization_header_;
+	std::string url_path_;
 	Peers peers_;
 	State state_;
 	int my_id_;

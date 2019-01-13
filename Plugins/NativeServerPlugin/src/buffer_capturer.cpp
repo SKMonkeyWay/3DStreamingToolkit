@@ -4,6 +4,7 @@
 
 #include "buffer_capturer.h"
 #include "webrtc/modules/video_coding/codecs/h264/h264_encoder_impl.h"
+#include "webrtc/rtc_base/logging.h"
 
 namespace StreamingToolkit
 {
@@ -14,6 +15,7 @@ namespace StreamingToolkit
 		sink_wants_observer_(nullptr)
 	{
 		use_software_encoder_ = webrtc::H264EncoderImpl::CheckDeviceNVENCCapability() != NVENCSTATUS::NV_ENC_SUCCESS;
+		LOG(INFO) << (use_software_encoder_ ? "not " : "") << "using hardware encoding";
 		set_enable_video_adapter(false);
 		SetCaptureFormat(NULL);
 	}

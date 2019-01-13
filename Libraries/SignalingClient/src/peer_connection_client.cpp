@@ -142,6 +142,13 @@ void PeerConnectionClient::Connect(const std::string& server, int port,
 		parsedServer = parsedServer.substr(7);
 	}
 
+	size_t urlPathPosition = parsedServer.find('/');
+	if (urlPathPosition != std::string::npos)
+	{
+		url_path_ = parsedServer.substr(urlPathPosition);
+		parsedServer = parsedServer.substr(0, urlPathPosition);
+	}
+
 	server_address_.SetIP(parsedServer);
 	server_address_.SetPort(port);
 	client_name_ = client_name;
@@ -185,7 +192,7 @@ std::string PeerConnectionClient::PrepareRequest(const std::string& method, cons
 		result += (char)toupper(method[i]);
 	}
 
-	result += " " + fragment + " HTTP/1.0\r\n";
+	result += " " + (url_path_.empty() ? "" : url_path_) + fragment + " HTTP/1.0\r\n";
 
 	for (auto it = headers.begin(); it != headers.end(); ++it)
 	{
