@@ -9,23 +9,22 @@ using namespace ::testing;
 class PeerConductorFixture : public PeerConductor
 {
 public:
-	PeerConductorFixture(scoped_refptr<PeerConnectionFactoryInterface> peer_factory) :
-		PeerConductorFixture(-1, "", make_shared<WebRTCConfig>(), peer_factory, [](const std::string&) {})
+	PeerConductorFixture() :
+		PeerConductorFixture(-1, "", make_shared<WebRTCConfig>(), [](const std::string&) {})
 	{
 	}
 
-	PeerConductorFixture(scoped_refptr<PeerConnectionFactoryInterface> peer_factory,
+	PeerConductorFixture(
 		const function<void(const string&)>& send_func) :
-		PeerConductorFixture(-1, "", make_shared<WebRTCConfig>(), peer_factory, send_func)
+		PeerConductorFixture(-1, "", make_shared<WebRTCConfig>(), send_func)
 	{
 	}
 
 	PeerConductorFixture(int id,
 		const string& name,
 		shared_ptr<WebRTCConfig> webrtc_config,
-		scoped_refptr<PeerConnectionFactoryInterface> peer_factory,
 		const function<void(const string&)>& send_func) :
-		PeerConductor(id, name, webrtc_config, peer_factory, send_func)
+		PeerConductor(id, name, webrtc_config, send_func)
 	{
 	}
 
@@ -54,8 +53,8 @@ public:
 	class IntPeerConductorFixture : public PeerConductorFixture
 	{
 	public:
-		IntPeerConductorFixture(scoped_refptr<PeerConnectionFactoryInterface> peer_factory) :
-			PeerConductorFixture(peer_factory)
+		IntPeerConductorFixture() :
+			PeerConductorFixture(peer_factory_)
 		{
 		}
 
@@ -65,8 +64,8 @@ public:
 		}
 	};
 
-	MultiPeerConductorFixture(scoped_refptr<PeerConnectionFactoryInterface> peer_factory) :
-		MultiPeerConductor(make_shared<FullServerConfigFixture>(), peer_factory)
+	MultiPeerConductorFixture() :
+		MultiPeerConductor(make_shared<FullServerConfigFixture>())
 	{
 	}
 
@@ -75,7 +74,7 @@ public:
 	virtual scoped_refptr<PeerConductor> SafeAllocatePeerMapEntry(int peer_id) override
 	{
 		// use an int fixture so that IsConnected can be truthy
-		auto intFixture = new RefCountedObject<IntPeerConductorFixture>(peer_factory_);
+		auto intFixture = new RefCountedObject<IntPeerConductorFixture>();
 		
 		// mirror the workload of storing in peers
 		connected_peers_[peer_id] = intFixture;
