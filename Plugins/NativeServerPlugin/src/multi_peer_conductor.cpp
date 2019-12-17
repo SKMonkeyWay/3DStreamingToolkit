@@ -105,6 +105,7 @@ void MultiPeerConductor::OnIceConnectionChange(int peer_id, PeerConnectionInterf
 		// note: we do not delete the peer at this time, as it introduces a race condition during cleanup
 		// see https://github.com/CatalystCode/3DStreamingToolkit/commit/fddb1ddebbdc82900e404fc5736b1b4944a6db1c
 		connected_peer_states_.erase(peer_id);
+		connected_peers_.erase(peer_id);
 
 		if (cur_capacity_ > -1)
 		{
@@ -170,7 +171,7 @@ void MultiPeerConductor::OnPeerConnected(int id, const string& name)
 
 void MultiPeerConductor::OnPeerDisconnected(int peer_id)
 {
-	connected_peers_.erase(peer_id);
+	//connected_peers_.erase(peer_id);
 }
 
 void MultiPeerConductor::OnMessageFromPeer(int peer_id, const string& message)
