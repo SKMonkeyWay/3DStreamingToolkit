@@ -789,12 +789,31 @@ void PeerConnectionClient::OnClose(rtc::AsyncSocket* socket, int err)
 	socket->Close();
 
 #ifdef WIN32
-	if (err != WSAECONNREFUSED)
+	if (err == WSAECONNREFUSED)
 	{
 #else
-	if (err != ECONNREFUSED)
+	if (err == ECONNREFUSED)
 	{
 #endif
+		if (socket == control_socket_.get())
+		{
+			LOG(WARNING) << "Connection refused; retrying in 2 seconds";
+			rtc::Thread::Current()->PostDelayed(RTC_FROM_HERE, kReconnectDelay, this, 0);
+		}
+		else
+		{
+			Close();
+			std::for_each(callbacks_.rbegin(), callbacks_.rend(), [](PeerConnectionClientObserver* o) { o->OnDisconnected(); });
+		}
+	}
+	else if (err == WSAECONNABORTED
+		|| err == WSAECONNRESET)
+	{
+		Close();
+		std::for_each(callbacks_.rbegin(), callbacks_.rend(), [](PeerConnectionClientObserver* o) { o->OnDisconnected(); });
+	}
+	else
+	{
 		if (socket == hanging_get_.get())
 		{
 			if (state_ == CONNECTED)
@@ -808,22 +827,9 @@ void PeerConnectionClient::OnClose(rtc::AsyncSocket* socket, int err)
 			std::for_each(callbacks_.rbegin(), callbacks_.rend(), [&](PeerConnectionClientObserver* o) { o->OnMessageSent(err); });
 		}
 	}
-	else
-	{
-		if (socket == control_socket_.get())
-		{
-			LOG(WARNING) << "Connection refused; retrying in 2 seconds";
-			rtc::Thread::Current()->PostDelayed(RTC_FROM_HERE, kReconnectDelay, this, 0);
-		}
-		else
-		{
-			Close();
-			std::for_each(callbacks_.rbegin(), callbacks_.rend(), [](PeerConnectionClientObserver* o) { o->OnDisconnected(); });
-		}
-	}
-	}
+}
 
-void PeerConnectionClient::OnMessage(rtc::Message* msg)
+void PeerConnectionClient::OnMessage(rtc::Message * msg)
 {
 	// indicates this message is to trigger a heartbeat request
 	if (msg->message_id == kHeartbeatScheduleId)
@@ -854,12 +860,12 @@ const std::string& PeerConnectionClient::authorization_header() const
 	return authorization_header_;
 }
 
-void PeerConnectionClient::SetAuthorizationHeader(const std::string& value)
+void PeerConnectionClient::SetAuthorizationHeader(const std::string & value)
 {
 	authorization_header_ = value;
 }
 
-void PeerConnectionClient::OnHeartbeatGetConnect(rtc::AsyncSocket* socket)
+void PeerConnectionClient::OnHeartbeatGetConnect(rtc::AsyncSocket * socket)
 {
 	auto req = PrepareRequest("GET", "/heartbeat?peer_id=" + std::to_string(my_id_), { { "Host", server_address_.hostname() } });
 
@@ -867,7 +873,7 @@ void PeerConnectionClient::OnHeartbeatGetConnect(rtc::AsyncSocket* socket)
 	RTC_DCHECK(sent == req.length());
 }
 
-void PeerConnectionClient::OnHeartbeatGetRead(rtc::AsyncSocket* socket)
+void PeerConnectionClient::OnHeartbeatGetRead(rtc::AsyncSocket * socket)
 {
 	std::string data;
 	size_t content_length = 0;
@@ -908,24 +914,24 @@ void PeerConnectionClient::SetHeartbeatMs(const int tickMs)
 	heartbeat_tick_ms_ = tickMs;
 }
 
-void PeerConnectionClient::UpdateConnectionState(int id, 
+void PeerConnectionClient::UpdateConnectionState(int id,
 	webrtc::PeerConnectionInterface::IceConnectionState state)
 {
 	peers_[id] = peers_[id].substr(0, peers_[id].find(" - "));
 	switch (state)
 	{
-		case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionConnected:
-		case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionCompleted:
-			peers_[id] += " - Connected";
-			break;
+	case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionConnected:
+	case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionCompleted:
+		peers_[id] += " - Connected";
+		break;
 
-		case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionDisconnected:
-			peers_[id] += " - Disconnected";
-			break;
+	case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionDisconnected:
+		peers_[id] += " - Disconnected";
+		break;
 
-		case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionFailed:
-		case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionClosed:
-			peers_[id] += " - Error";
-			break;
+	case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionFailed:
+	case webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionClosed:
+		peers_[id] += " - Error";
+		break;
 	}
 }
