@@ -50,9 +50,10 @@ void SslCapableSocket::SetUseSsl(const bool& useSsl)
 {
 	if (useSsl && ssl_adapter_.get() == nullptr)
 	{
-		ssl_adapter_.reset(SSLAdapter::Create(socket_.get()));
+		rtc::AsyncSocket* socket = socket_.release();
+		ssl_adapter_.reset(SSLAdapter::Create(socket));
 		ssl_adapter_->SetMode(rtc::SSL_MODE_TLS);
-		MapUnderlyingEvents(ssl_adapter_.get(), socket_.get());
+		MapUnderlyingEvents(ssl_adapter_.get(), socket);
 	}
 	else if (!useSsl && ssl_adapter_.get() != nullptr)
 	{
