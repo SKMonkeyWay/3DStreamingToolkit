@@ -52,7 +52,7 @@ PeerConductor::~PeerConductor()
 }
 
 // id, new_state, threadsafe per-instance 
-signal2<int, PeerConnectionInterface::IceConnectionState, sigslot::multi_threaded_local> SignalIceConnectionChange;
+//signal2<int, PeerConnectionInterface::IceConnectionState, sigslot::multi_threaded_local> SignalIceConnectionChange;
 
 // This callback transfers the ownership of the |desc|.
 // TODO(deadbeef): Make this take an std::unique_ptr<> to avoid confusion

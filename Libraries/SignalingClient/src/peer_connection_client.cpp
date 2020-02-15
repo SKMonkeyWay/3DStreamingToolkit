@@ -674,7 +674,7 @@ void PeerConnectionClient::OnHangingGetRead(rtc::AsyncSocket* socket)
 
 			// TODO(bengreenier): special case for azure 500 issue
 			// see https://github.com/CatalystCode/3DStreamingToolkit/issues/45
-			if (status == 500)
+			if (status == 500 || status == 504) // ie nginx reverse proxy timeout
 			{
 				hanging_get_->Close();
 				hanging_get_->Connect(server_address_);

@@ -60,6 +60,8 @@ public:
 
 	const map<int, scoped_refptr<PeerConductor>>& Peers() const;
 
+	void Cleanup();
+
 	PeerConnectionClient& PeerConnection();
 
 	//-------------------------------------------------------------------------
@@ -103,6 +105,7 @@ protected:
 	shared_ptr<FullServerConfig> config_;
 	scoped_refptr<PeerConnectionFactoryInterface> peer_factory_;
 	map<int, scoped_refptr<PeerConductor>> connected_peers_;
+	list<int> disconnected_peers_;
 	map<int, PeerConnectionInterface::IceConnectionState> connected_peer_states_;
 	queue<MessageEntry> message_queue_;
 	atomic_bool should_process_queue_;
